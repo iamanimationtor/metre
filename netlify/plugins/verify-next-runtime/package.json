@@ -1,0 +1,5 @@
+{
+  "name": "verify-next-runtime",
+  "private": true,
+  "type": "module"
+}
