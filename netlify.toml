@@ -1,0 +1,37 @@
+# ─────────────────────────────────────────────────────────────
+# Netlify configuration — مطابق مستندات رسمی docs.netlify.com
+# Next.js با آداپتور OpenNext به‌صورت خودکار شناسایی می‌شود؛
+# این فایل فقط صراحت‌بخشی و سخت‌سازی استقرار است.
+# ─────────────────────────────────────────────────────────────
+
+[build]
+  command = "npm run build"
+  # خروجی Next.js که آداپتور نتلیفای آن را پردازش می‌کند
+  publish = ".next"
+
+[build.environment]
+  # Next.js 16 به Node ≥ 20 نیاز دارد؛ نسخه LTS پایدار
+  NODE_VERSION = "22"
+  # نصب تمیز و بی‌سروصدا در CI
+  NPM_FLAGS = "--no-audit --no-fund"
+  # محافظت در برابر خطاهای assets بین دو استقرار متوالی (opt-in رسمی نتلیفای)
+  NETLIFY_NEXT_SKEW_PROTECTION = "true"
+
+# ── هدرهای امنیتی و کش ─────────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    # باندل‌ها هش یکتا دارند → کش یک‌ساله ایمن
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"

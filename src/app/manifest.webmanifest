@@ -1,0 +1,19 @@
+{
+  "name": "HERMIMETR — برآورد هوشمند هزینه ساخت",
+  "short_name": "HERMIMETR",
+  "description": "سیستم متره و برآورد آنلاین هزینه ساخت ساختمان مطابق بازار و قوانین ایران",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#065f46",
+  "icons": [
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
