@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1000" viewBox="0 0 900 1000" fill="none">
+  <defs>
+    <linearGradient id="sky" x1="450" y1="0" x2="450" y2="1000" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F766E"/>
+      <stop offset=".55" stop-color="#5EEAD4"/>
+      <stop offset="1" stop-color="#FDE68A"/>
+    </linearGradient>
+    <linearGradient id="tower" x1="252" y1="164" x2="688" y2="848" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#CBD5E1"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="380" y1="250" x2="640" y2="800" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+    <pattern id="windows" width="76" height="70" patternUnits="userSpaceOnUse">
+      <rect x="12" y="12" width="48" height="43" rx="4" fill="#CCFBF1" fill-opacity=".88"/>
+      <path d="M36 12v43" stroke="#0F766E" stroke-opacity=".28" stroke-width="3"/>
+    </pattern>
+    <filter id="shadow" x="120" y="110" width="690" height="850" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+  </defs>
+  <rect width="900" height="1000" fill="url(#sky)"/>
+  <circle cx="690" cy="202" r="108" fill="#FEF3C7" fill-opacity=".62"/>
+  <circle cx="690" cy="202" r="150" fill="#FEF3C7" fill-opacity=".16"/>
+  <path d="M0 684 122 595l114 71 100-112 111 92 122-143 112 122 101-73 118 90v358H0V684Z" fill="#134E4A" fill-opacity=".16"/>
+  <path d="M0 770 110 690l112 69 104-108 99 81 128-100 116 114 104-86 127 91v249H0V770Z" fill="#0F766E" fill-opacity=".25"/>
+  <ellipse cx="455" cy="856" rx="330" ry="74" fill="#0F172A" fill-opacity=".24" filter="url(#shadow)"/>
+  <path d="M244 248 542 158l126 61v625H244V248Z" fill="url(#tower)"/>
+  <path d="m542 158 126 61v625H542V158Z" fill="#94A3B8" fill-opacity=".72"/>
+  <path d="M244 248 542 158v625H244V248Z" fill="url(#glass)" fill-opacity=".94"/>
+  <path d="m244 248 298-90v46l-298 91v-47Z" fill="#F8FAFC" fill-opacity=".92"/>
+  <path d="M281 300h226v454H281V300Z" fill="url(#windows)"/>
+  <path d="M542 250h78v504h-78V250Z" fill="#99F6E4" fill-opacity=".7"/>
+  <path d="M542 250h78v504h-78V250Z" fill="url(#windows)" fill-opacity=".52"/>
+  <path d="M244 782h424v35H244v-35Z" fill="#F8FAFC"/>
+  <path d="M211 817h489v32H211v-32Z" fill="#64748B"/>
+  <path d="M228 849h460v16H228v-16Z" fill="#334155" fill-opacity=".8"/>
+  <path d="M350 239v578M454 207v610M560 190v592" stroke="#F8FAFC" stroke-opacity=".72" stroke-width="12"/>
+  <path d="M251 360h414M249 474h417M247 588h420M245 701h423" stroke="#F8FAFC" stroke-opacity=".65" stroke-width="10"/>
+  <path d="M0 890h900v110H0V890Z" fill="#064E3B" fill-opacity=".72"/>
+  <path d="M90 890v-80h38v80m24 0v-124h45v124m586 0v-102h42v102m-116 0v-65h36v65" fill="#064E3B" fill-opacity=".82"/>
+  <path d="M0 916c130-32 230-23 346 0 130 26 222 31 343 0 83-21 145-23 211-12v96H0v-84Z" fill="#022C22" fill-opacity=".46"/>
+</svg>

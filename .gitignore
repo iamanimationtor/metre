@@ -1,0 +1,26 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# production
+/build
+
+# env & secrets — هرگز کامیت نشود
+.env
+.env.*
+!.env.example
+
+# netlify
+.netlify
+/functions-dist
+
+# debug & misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.tsbuildinfo
