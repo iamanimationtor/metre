@@ -1,108 +1,77 @@
-# 🚀 راهنمای استقرار روی Netlify (بدون نقص، طبق مستندات رسمی)
+# راهنمای استقرار HERMIMETR روی Netlify
 
-این پروژه یک اپلیکیشن **Next.js 16 (App Router)** است. مطابق [مستندات رسمی نتلیفای](https://docs.netlify.com/frameworks/next-js/overview/)،
-Next.js با آداپتور متن‌باز **OpenNext** به‌صورت خودکار و بدون نیاز به افزونه شناسایی و پیکربندی می‌شود؛
-SSR، Route Handlerها، بهینه‌سازی تصاویر (`next/image` از طریق Image CDN)، کش لبه و Skew Protection همگی پشتیبانی می‌شوند.
-فایل `netlify.toml` موجود صرفاً برای صراحت نسخه Node و هدرهای امنیتی است.
+این پروژه **Next.js 16 با App Router، صفحات سروری و API** است؛ خروجی خام `.next` یک سایت استاتیک آمادهٔ انتشار نیست. برای نمونه، فایل صفحهٔ اصلی در `.next/server/app/index.html` ساخته می‌شود، نه در ریشهٔ `.next`. اگر آداپتور Next.js اجرا نشود، Netlify ممکن است بیلد را موفق اعلام کند اما برای `/` و سایر مسیرها صفحهٔ پیش‌فرض **Page not found** نشان دهد.
 
-> **علت رایج صفحه‌ی Netlify «Page not found»:** Netlify فقط فایل‌های قابل‌مشاهده در مخزن و پوشه‌ی انتشار را می‌سازد. در ریشه‌ی مخزن باید `package.json`، `netlify.toml` و پوشه‌ی `src/` مستقیماً وجود داشته باشند؛ قرار دادن کل پروژه فقط داخل فایل ZIP باعث می‌شود Netlify اصلاً اپ Next.js را تشخیص ندهد. هنگام اتصال سایت، Base directory را خالی/ریشه‌ی مخزن بگذارید و ZIP را به‌عنوان ورودی build انتخاب نکنید.
+برای جلوگیری از این وضعیت، `netlify.toml` آداپتور رسمی `@netlify/plugin-nextjs` را **صریحاً** فعال می‌کند و نسخهٔ آن در `package-lock.json` ثبت شده است. آداپتور تابع سرور، مسیریابی، فایل‌های استاتیک و کش موردنیاز را می‌سازد. افزونهٔ محلی `verify-next-runtime` نیز پس از بسته‌بندی بررسی می‌کند که تابع، مسیرهای GET و POST ضروری و فایل‌های قابل انتشار وجود داشته باشند؛ اگر نباشند، بیلد را پیش از انتشار متوقف می‌کند.
 
----
+> این تنظیمات خطاهای مربوط به حساب، دامنه، شاخهٔ انتخاب‌شده یا انتشار نسخهٔ قدیمی را به‌تنهایی اصلاح نمی‌کنند. نتیجه را حتماً روی URL همان deploy بررسی کنید.
 
-## ۱) پیش‌نیازها
+## ۱. تنظیمات پروژه در Netlify
 
-| مورد | توضیح |
+مخزن Git حاوی پروژه را به سایت وصل کنید و در **Project configuration → Build & deploy** موارد زیر را بررسی کنید:
+
+| تنظیم | مقدار |
 | --- | --- |
-| حساب Git | ریپازیتوری GitHub/GitLab/Bitbucket حاوی کد پروژه |
-| پایگاه داده PostgreSQL | پیشنهاد: [Neon](https://neon.tech) یا Supabase (لایه رایگان + اتصال Serverless-friendly) |
-| حساب Netlify | لایه رایگان کافی است |
+| Base directory | خالی یا ریشهٔ مخزن؛ `package.json`، `netlify.toml`، `src` و `netlify/plugins` باید در همان پروژه در دسترس باشند |
+| Build command | `npm run build` |
+| Publish directory | `.next` |
+| Node version | `22` (در `netlify.toml` تنظیم شده است) |
+| آداپتور | `@netlify/plugin-nextjs` از `netlify.toml`؛ نصب دستی Integration در داشبورد لازم نیست |
 
-> ⚠️ مهم: توکن‌ها و رشته اتصال دیتابیس هرگز نباید در ریپازیتوری باشند. فایل `.env` در `.gitignore` قرار دارد؛ فقط `.env.example` نگهداری می‌شود.
+- این اپلیکیشن فقط استاتیک نیست. پوشهٔ انتشار را به `public` یا `out` تغییر ندهید و redirect عمومی `/* → /index.html` اضافه نکنید؛ این کار ممکن است APIها و مسیرهای سروری را خراب کند. در زمان انتشار، آداپتور محتوای قابل انتشار را خودش آماده می‌کند.
+- متغیر `NETLIFY_NEXT_PLUGIN_SKIP` نباید `true` یا `1` باشد؛ آن را از تنظیمات محیطی Netlify حذف کنید. تنظیماتی مثل `NPM_FLAGS=--omit=dev` را هم که نصب وابستگی‌های build را حذف می‌کنند، استفاده نکنید.
+- تمام فایل‌های پروژه، شامل `netlify.toml`، `package-lock.json` و `netlify/plugins/verify-next-runtime`، باید در **همان شاخه و commit مورد استفادهٔ سایت** وجود داشته باشند. اگر شاخهٔ تولید `main` است، deploy شاخهٔ دیگر الزاماً سایت اصلی را به‌روز نمی‌کند.
+- از deploy مبتنی بر Git یا دستور `netlify deploy --build --prod` استفاده کنید. آپلود دستی پوشهٔ خام `.next` یا ZIP سورس، مرحلهٔ build و آداپتور را اجرا نمی‌کند.
 
----
+## ۲. متغیرهای محیطی و دیتابیس
 
-## ۲) آماده‌سازی دیتابیس
+| متغیر | کاربرد |
+| --- | --- |
+| `DATABASE_URL` | اتصال PostgreSQL برای ذخیره و بازیابی گزارش‌ها، شاخص‌ها و پنل مدیریت؛ باید در محدودهٔ **Functions/runtime** قابل دسترس باشد |
+| `NEXT_PUBLIC_SITE_URL` | اختیاری؛ دامنهٔ اصلی مثل `https://example.netlify.app` برای لینک‌ها و sitemap |
 
-1. یک دیتابیس PostgreSQL بسازید و رشته اتصال را یادداشت کنید (ترجیحاً اتصال pooled مانند `...pooler...?sslmode=require` در Neon).
-2. اسکیمای جداول را اعمال کنید — یک بار، از سیستمی که به دیتابیس دسترسی دارد:
-
-   ```bash
-   DATABASE_URL="postgresql://..." npx drizzle-kit push --force
-   ```
-
-   (جدول‌ها: `estimates`, `price_overrides`, `price_indices`, `app_settings`)
-3. `DATABASE_URL` برای **ساخت سایت لازم نیست**؛ بااین‌حال برای ذخیره‌ی برآوردها، گزارش‌های دائمی، شاخص‌ها و پنل مدیریت ضروری است. پس از تنظیم متغیر، `/api/health` باید `"database":"up"` برگرداند؛ شاخص‌های قیمت نیز در اولین فراخوانی به‌صورت خودکار seed می‌شوند.
-
----
-
-## ۳) استقرار از طریق داشبورد Netlify (روش توصیه‌شده)
-
-1. در [app.netlify.com](https://app.netlify.com) گزینه **Add new site → Import an existing project** را بزنید و ریپازیتوری را متصل کنید.
-2. مطمئن شوید **Base directory خالی/ریشه‌ی مخزن** است و تنظیمات ساخت مطابق `netlify.toml` هستند:
-   - **Build command:** `npm run build`
-   - **Publish directory:** `.next`
-   - **Node version:** `22`
-   - **Framework/runtime:** Next.js؛ آداپتور Netlify/OpenNext باید فعال/خودکار تشخیص داده شود. این برنامه SSR و API دارد؛ خروجی آن را به `public` یا `out` تغییر ندهید و SPA catch-all redirect اضافه نکنید.
-3. در بخش **Site configuration → Environment variables** این متغیرها را اضافه کنید. برای `DATABASE_URL` دسترسی **Functions/runtime** را نیز فعال کنید:
-
-   | متغیر | مقدار | ضرورت |
-   | --- | --- | --- |
-   | `DATABASE_URL` | رشته اتصال PostgreSQL | لازم برای ذخیره و لینک دائمی گزارش‌ها، APIهای داده و پنل مدیریت؛ برای build صفحه‌ی اصلی لازم نیست |
-   | `NEXT_PUBLIC_SITE_URL` | دامنه نهایی (مثلاً `https://hermimetr.netlify.app`) | اختیاری — برای sitemap و لینک گزارش‌ها؛ بدون آن از `URL` داخلی نتلیفای استفاده می‌شود |
-
-4. **Deploy site** را بزنید. پس از ساخت، دامنه‌ی اصلی باید صفحه‌ی HERMIMETR را نشان دهد؛ بیلد حدود ۱ تا ۲ دقیقه طول می‌کشد.
-
----
-
-## ۴) استقرار با Netlify CLI (اختیاری)
+برای دیتابیس بهتر است از اتصال pooled و SSL استفاده کنید و اسکیما را یک بار از محیطی با دسترسی به دیتابیس اعمال کنید:
 
 ```bash
-npm install -g netlify-cli
-netlify login
-netlify link
-netlify deploy --build --prod
+DATABASE_URL="postgresql://..." npx drizzle-kit push --force
 ```
 
-> مطابق مستندات، حتماً از فلگ `--build` استفاده شود تا خروجی Next.js درست پردازش شود.
+کلیدها و رشتهٔ اتصال را در Git قرار ندهید. `DATABASE_URL` برای build و نمایش صفحهٔ اصلی لازم نیست؛ بدون آن، `/api/health` مقدار `"database":"down"` می‌دهد و گزارش‌ها ذخیره نمی‌شوند.
 
----
+## ۳. ساخت و بررسی محلی
 
-## ۵) چک‌لیست پس از استقرار
+```bash
+npm ci
+npm test
+npm run lint
+npm run typecheck
+npx --yes netlify-cli@27.20.0 build --offline
+```
 
-- [ ] `GET /api/health` پاسخ ۲۰۰ بدهد و پس از تنظیم دیتابیس، `"database":"up"` را نشان دهد (بدون دیتابیس پاسخ `down` است؛ صفحه‌ی اصلی همچنان در دسترس می‌ماند).
-- [ ] یک برآورد نمونه در `/calculator` ثبت شود و صفحه گزارش `/report/[code]` باز شود.
-- [ ] `sitemap.xml` و `robots.txt` در دسترس باشند.
-- [ ] پنل `/admin`: تب «شاخص‌های قیمت» مقادیر پایه (۱۰۰) را نشان دهد؛ تست «به‌روزرسانی خودکار تا امروز» بدون خطا اجرا شود.
+در لاگ build نتلیفای باید موارد زیر دیده شوند:
 
----
+1. `Using Next.js Runtime - v5...`
+2. بسته‌بندی `___netlify-server-handler`
+3. اجرای `verify-next-runtime (onPostBuild event)` و پیام `Verified the Next.js server function, application routes, and publish assets.`
 
-## ۶) عیب‌یابی رایج
+هشدار غیرفعال بودن Skew Protection هنگام build با CLI آفلاین طبیعی است؛ این قابلیت جداگانه برای buildهای Netlify در `netlify.toml` فعال شده است. برای به‌روزرسانی آداپتور، dependency و lockfile را به‌روز و همین آزمون‌ها را دوباره اجرا کنید.
 
-| نشانه | راه‌حل |
+## ۴. انتشار و بررسی نسخهٔ زنده
+
+1. تغییرات را در شاخه‌ای که سایت Netlify از آن build می‌شود قرار دهید. در بخش **Deploys**، یک deploy جدید را با **Clear cache and deploy site** اجرا کنید.
+2. در لاگ deploy، وجود سه مورد بخش قبل و مسیر فایل پیکربندی درست را بررسی کنید. در خلاصهٔ deploy یا بخش Functions، تابع `___netlify-server-handler` باید وجود داشته باشد. عبارت `0 new function(s) to upload` به‌تنهایی کافی برای تشخیص نیست، چون ممکن است تابع قبلی بدون تغییر دوباره استفاده شود.
+3. ابتدا **URL اختصاصی همان deploy** را باز کنید، سپس دامنهٔ اصلی را. صفحهٔ `/` و `/calculator` باید نمایش داده شوند و `/api/health` باید JSON حاوی `"service":"hermimetr"` برگرداند. `/images/hero-building.png` و فایل‌های `/_next/static/` نیز باید بارگذاری شوند.
+4. یک مسیر عمداً ناموجود باید پاسخ **۴۰۴** دهد. پس از راه‌اندازی دیتابیس، یک برآورد ثبت کنید و فقط با کد واقعی آن، `/report/[ref]` را بررسی کنید.
+
+اگر URL اختصاصی deploy درست است ولی دامنهٔ اصلی هنوز ۴۰۴ می‌دهد، بررسی کنید deploy منتشرشده نسخهٔ تولید است و دامنه به همان سایت Netlify متصل است. در صورت ادامهٔ مشکل، URL سایت، URL deploy، نام شاخه/commit و بخش‌های مربوط به Runtime و Functions در لاگ deploy برای تشخیص لازم‌اند؛ متغیرهای محرمانه را ارسال نکنید.
+
+## ۵. خطاهای رایج
+
+| نشانه | بررسی |
 | --- | --- |
-| صفحه‌ی پیش‌فرض Netlify با پیام **Page not found** | در لاگ Deploy اول موفق بودن build را تأیید کنید؛ Base directory باید ریشه‌ی مخزن باشد و همان‌جا `package.json`، `netlify.toml` و `src/` دیده شوند. Build command را `npm run build` و Publish directory را `.next` نگه دارید؛ برای Next.js از redirect عمومی به `index.html` استفاده نکنید. |
-| خطای اتصال دیتابیس یا `database: down` در APIها | بررسی `DATABASE_URL` در Environment variables و دسترسی Functions/runtime؛ فعال بودن SSL (`sslmode=require`)؛ استفاده از اتصال pooled |
-| صفحه سفید/خطای build درباره Node | اطمینان از `NODE_VERSION=22` (در `netlify.toml` تنظیم شده) |
-| build در دانلود فونت متوقف می‌شود | فونت Vazirmatn اکنون از پکیج محلی npm بسته‌بندی می‌شود و به اتصال زمان build به Google Fonts نیاز ندارد. |
-| سرد شدن Functions بعد از بی‌فعالی | طبیعی است؛ اولین درخواست کمی کندتر است اما Pool اتصال بازسازی می‌شود. نیازی به تغییر کد نیست |
-| نیاز به تغییر اسکیمای DB بعداً | اجرای مجدد `npx drizzle-kit push` با همان رشته اتصال (سازگار با داده‌های موجود) |
-| دامنه اختصاصی | Site configuration → Domain management → افزودن دامنه؛ `NEXT_PUBLIC_SITE_URL` را به‌روز کنید |
-
----
-
-## ۷) چک‌لیست آمادگی تحویل نهایی
-
-- [x] بیلد پروداکشن بدون هیچ خطا/هشدار TypeScript
-- [x] مدیریت خطا در همه سطوح (`error.tsx`، `global-error.tsx`، `not-found.tsx`)
-- [x] هدرهای امنیتی در دو لایه (`next.config.ts` و `netlify.toml`)
-- [x] Skew Protection رسمی نتلیفای فعال
-- [x] ایندکس دیتابیس برای کوئری‌های تاریخچه اعمال شده (`estimates_created_at_idx`)
-- [x] سلامت‌سنجی کامل در `/api/health` (وضعیت اپ + اتصال دیتابیس)
-- [x] سئو: متادیتای کامل، OG/Twitter با لینک مطلق، JSON‑LD، sitemap پویا، robots
-- [x] PWA: مانIFEST راست‌چین + آیکون؛ قابل نصب روی موبایل
-- [x] دسترس‌پذیری: RTL استاندارد، اسکیپ‌لینک، فوکوس مشخص، پشتیبانی کاهش حرکت
-
-## ۸) نگه‌داری جاری
-
-- **قیمت‌ها خودکار به‌روز می‌مانند**: شاخص‌های مصالح/دستمزد با دریفت ماهانه جلو می‌آیند؛ هر زمان خواستید از `/admin` تثبیت دستی انجام دهید.
-- گزارش‌ها در جدول `estimates` ذخیره می‌شوند و از طریق `sitemap.xml` نیز نمایه‌پذیرند.
+| پیام Netlify «Page not found» با وجود build موفق | اول commit و Base directory را بررسی کنید؛ سپس مطمئن شوید `netlify.toml` خوانده شده، Runtime و تابع سرور در همان deploy وجود دارند و deploy جدید روی دامنهٔ درست منتشر شده است. |
+| خطای `NETLIFY_NEXT_PLUGIN_SKIP` | این متغیر را از Environment variables حذف و مجدداً deploy کنید. |
+| خطای افزونهٔ `verify-next-runtime` | جزئیات خطا را در لاگ ببینید؛ آداپتور باید اجرا شود، تابع و مسیرهای آن بسته‌بندی شوند و publish directory برابر `.next` باشد. |
+| `/api/health` مقدار `database: down` دارد | `DATABASE_URL`، محدودهٔ Functions، SSL، دسترسی شبکه و اعمال اسکیما را بررسی کنید؛ این مشکل علت ۴۰۴ صفحهٔ اصلی نیست. |
+| گزارش مشخصی ۴۰۴ می‌دهد | از درستی کد گزارش و وجود آن در دیتابیس همان محیط مطمئن شوید. |
+| خطای نسخهٔ Node یا dependency | Node 22 و نصب وابستگی‌های توسعه را بررسی کنید؛ cache را پاک کرده و مجدداً deploy کنید. |
